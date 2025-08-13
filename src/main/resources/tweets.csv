@@ -1,4 +1,16 @@
 id,text
 1,Hello Twitter World!
-2,This is a random post from my CSV file.
-3,Here’s another scheduled tweet from the bot.
+2,Just like scaling a database, growing your career is about consistent small optimizations.
+3,Choosing the right database is like choosing the right tool...overkill hurts as much as underkill.
+4,CDNs are like having mini-warehouses everywhere so your users get data faster.
+5,The CAP theorem isn’t about picking one, it’s about knowing your trade-offs.
+6,Indexes in a database are like a book’s table of contents: faster lookups, but with a maintenance cost.
+7,A Bloom filter is your bouncer...lets in likely members, turns away obvious strangers.
+8,Client-side caching is like remembering your Wi-Fi password, no need to ask the server every time.
+9,Consistent hashing is like a pizza cutter that ensures slices are fair even when guests join late.
+10,Compression in APIs is like sending a zipped folder..smaller size, same content.
+11,Message queues let you send a letter without waiting for the recipient to open it immediately.
+12,A reverse proxy is your system’s receptionist—routes requests to the right service.
+13,Failover systems are like parachutes—better to have one and not need it, than need it and not have it.
+14,Load balancing is the art of splitting work so no server feels like Monday morning.
+15,System design is not about complexity—it’s about making things simple at scale.
