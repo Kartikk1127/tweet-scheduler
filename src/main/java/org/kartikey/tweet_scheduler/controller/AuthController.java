@@ -10,6 +10,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.UUID;
+import jakarta.servlet.http.HttpSession;
+import com.github.scribejava.core.pkce.PKCE;
+import java.util.UUID;
 
 @RestController
 public class AuthController {
@@ -23,20 +26,21 @@ public class AuthController {
     @Value("${TWITTER_REDIRECT_URI}")
     private String redirectUri;
 
-    private PKCE pkce;
-    private String state;
-
     @GetMapping("/auth-url")
-    public String getAuthUrl() {
+    public String getAuthUrl(HttpSession session) {
         try {
             String scope = "offline.access tweet.read tweet.write users.read";
 
-            pkce = new PKCE();
-            pkce.setCodeChallenge("challenge"); // in production: generate a secure random string
+            PKCE pkce = new PKCE();
+            pkce.setCodeChallenge("challenge"); // Ideally generate securely
             pkce.setCodeChallengeMethod(PKCECodeChallengeMethod.PLAIN);
             pkce.setCodeVerifier("challenge");
 
-            state = UUID.randomUUID().toString();
+            String state = UUID.randomUUID().toString();
+
+            // Save to session for later validation
+            session.setAttribute("pkce", pkce);
+            session.setAttribute("state", state);
 
             TwitterOAuth20Service service = new TwitterOAuth20Service(
                     clientId,
@@ -44,7 +48,6 @@ public class AuthController {
                     redirectUri,
                     scope
             );
-
             String authUrl = service.getAuthorizationUrl(pkce, state);
             return "Visit this URL to authorize:<br/><a href='" + authUrl + "'>" + authUrl + "</a>";
         } catch (Exception e) {
@@ -53,9 +56,16 @@ public class AuthController {
     }
 
     @GetMapping("/callback")
-    public String handleCallback(@RequestParam String code, @RequestParam String state) {
+    public String handleCallback(
+            @RequestParam String code,
+            @RequestParam String state,
+            HttpSession session
+    ) {
         try {
-            if (!state.equals(this.state)) {
+            String sessionState = (String) session.getAttribute("state");
+            PKCE pkce = (PKCE) session.getAttribute("pkce");
+
+            if (sessionState == null || !sessionState.equals(state)) {
                 return "Invalid state param. Possible CSRF attack.";
             }
 
@@ -82,4 +92,3 @@ public class AuthController {
         }
     }
 }
-
