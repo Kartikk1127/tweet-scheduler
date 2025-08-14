@@ -1,16 +1,31 @@
 id,text
-1,Hello Twitter World!
-2,Just like scaling a database, growing your career is about consistent small optimizations.
-3,Choosing the right database is like choosing the right tool...overkill hurts as much as underkill.
-4,CDNs are like having mini-warehouses everywhere so your users get data faster.
-5,The CAP theorem isn’t about picking one, it’s about knowing your trade-offs.
-6,Indexes in a database are like a book’s table of contents: faster lookups, but with a maintenance cost.
-7,A Bloom filter is your bouncer...lets in likely members, turns away obvious strangers.
-8,Client-side caching is like remembering your Wi-Fi password, no need to ask the server every time.
-9,Consistent hashing is like a pizza cutter that ensures slices are fair even when guests join late.
-10,Compression in APIs is like sending a zipped folder..smaller size, same content.
-11,Message queues let you send a letter without waiting for the recipient to open it immediately.
-12,A reverse proxy is your system’s receptionist,,,routes requests to the right service.
-13,Failover systems are like parachutes—better to have one and not need it, than need it and not have it.
-14,Load balancing is the art of splitting work so no server feels like Monday morning.
-15,System design is not about complexity...it’s about making things simple at scale.
+1,Everyone talks about scaling systems but how often do you think about scaling yourself. What does that look like for you?
+2,If your career was a database, what indexes would you build right now to make your progress faster?
+3,Choosing a database feels easy until you realize the wrong one is like using a sledgehammer to crack a peanut. What was the worst tool mismatch you have seen?
+4,CDNs are like secret shortcuts for your data. Ever measured how much faster your app got after adding one?
+5,The CAP theorem is less about limits and more about awareness. Which tradeoff would you choose if you had to?
+6,Database indexes are magical until you realize they also need care. Have you ever had to remove one to make things faster?
+7,A Bloom filter will happily guess but never promise. Where in your work could a small guess save you big time?
+8,Client-side caching is like remembering a friend’s number instead of checking your contacts every time. Where have you seen it fail?
+9,Consistent hashing quietly keeps distributed systems fair. Can you think of a time fairness mattered in your code?
+10,Compression in APIs saves bandwidth but sometimes at the cost of CPU. If you had to choose, which is more valuable for you?
+11,Message queues let you walk away after sending the letter and trust it will be delivered. What’s your favorite queue system?
+12,A reverse proxy can be invisible yet critical. If yours went down today, what would break first?
+13,Failover is boring until it saves you. Have you ever actually had to use one in production?
+14,Load balancing feels simple until you realize it decides whether users stay or leave. What’s your go to strategy?
+15,Good system design is not about making things bigger. It is about making them work better together. Agree or disagree?
+16,Every outage teaches you something. What is the single biggest lesson you have learned from downtime?
+17,Your first design is never your best design. How many iterations does it take for you to feel confident in one?
+18,Scaling is easy to talk about when you have no users. What would you scale first if traffic doubled tonight?
+19,Tradeoffs are the only universal law in engineering. Which tradeoff still bothers you the most?
+20,Data without indexes is like a library without a catalog. Which is your favorite indexing strategy and why?
+21,The fastest code is the code that never runs. Where have you removed logic and made something faster?
+22,Resilience is built in the boring times. What boring thing saved you in production?
+23,Designing for zero downtime is a challenge. Have you pulled it off successfully?
+24,Every tech stack has skeletons in the closet. What is the one yours hides?
+25,Caching feels like free speed until it serves you stale data. How do you deal with that?
+26,Monitoring tells you what is happening but logging tells you why. Which one do you invest more in?
+27,High availability sounds impressive until you do the math on cost. Would you pay double for 99.999 uptime?
+28,The hardest part of distributed systems is agreeing on the truth. How do you keep your services in sync?
+29,Your design should be so clear that new engineers understand it without a meeting. How close are you to that goal?
+30,The best engineers I know are obsessed with deleting code. When was the last time you deleted more than you wrote
