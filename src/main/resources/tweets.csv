@@ -10,7 +10,7 @@ id,text
 9,Consistent hashing is like a pizza cutter that ensures slices are fair even when guests join late.
 10,Compression in APIs is like sending a zipped folder..smaller size, same content.
 11,Message queues let you send a letter without waiting for the recipient to open it immediately.
-12,A reverse proxy is your system’s receptionist—routes requests to the right service.
+12,A reverse proxy is your system’s receptionist,,,routes requests to the right service.
 13,Failover systems are like parachutes—better to have one and not need it, than need it and not have it.
 14,Load balancing is the art of splitting work so no server feels like Monday morning.
-15,System design is not about complexity—it’s about making things simple at scale.
+15,System design is not about complexity...it’s about making things simple at scale.
