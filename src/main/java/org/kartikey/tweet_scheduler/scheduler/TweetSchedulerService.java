@@ -1,5 +1,6 @@
 package org.kartikey.tweet_scheduler.scheduler;
 
+import jakarta.annotation.PostConstruct;
 import org.kartikey.tweet_scheduler.model.TweetEntry;
 import org.kartikey.tweet_scheduler.twitter.TwitterService;
 import org.kartikey.tweet_scheduler.util.CsvLoader;
@@ -23,6 +24,11 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 @Service
 public class TweetSchedulerService {
+
+    @PostConstruct
+    public void init() {
+        postHourlyTweet();
+    }
 
     private static final Logger log = LoggerFactory.getLogger(TweetSchedulerService.class);
 
