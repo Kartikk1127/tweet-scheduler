@@ -19,6 +19,8 @@ public interface TweetRepository extends JpaRepository<Tweet, Long> {
             "ORDER BY t.priority DESC, t.createdAt ASC")
     Optional<Tweet> findNextTweetToPost(LocalDateTime now);
 
+    Optional<Tweet> findFirstByPostedFalseAndScheduledForIsNullOrScheduledForLessThanEqualOrderByPriorityDescCreatedAtAsc(LocalDateTime now);
+
     // Find all unposted tweets
     List<Tweet> findByPostedFalseOrderByPriorityDescCreatedAtAsc();
 

@@ -35,7 +35,7 @@ public class TweetService {
     }
 
     public Optional<Tweet> getNextTweetToPost() {
-        return tweetRepository.findNextTweetToPost(LocalDateTime.now());
+        return tweetRepository.findFirstByPostedFalseAndScheduledForIsNullOrScheduledForLessThanEqualOrderByPriorityDescCreatedAtAsc(LocalDateTime.now());
     }
 
     public List<Tweet> getAllUnpostedTweets() {
