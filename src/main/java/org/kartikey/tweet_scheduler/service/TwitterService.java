@@ -21,6 +21,7 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 import java.util.concurrent.atomic.AtomicLong;
 
 @Service
@@ -106,9 +107,13 @@ public class TwitterService {
                 "&refresh_token=" + URLEncoder.encode(refreshToken, StandardCharsets.UTF_8) +
                 "&client_id=" + URLEncoder.encode(clientId, StandardCharsets.UTF_8);
 
+        String basicAuth = Base64.getEncoder()
+                .encodeToString((clientId + ":" + clientSecret).getBytes(StandardCharsets.UTF_8));
+
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create("https://api.twitter.com/2/oauth2/token"))
                 .header("Content-Type", "application/x-www-form-urlencoded")
+                .header("Authorization", "Basic " + basicAuth)
                 .POST(HttpRequest.BodyPublishers.ofString(form))
                 .build();
 
