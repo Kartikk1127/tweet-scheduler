@@ -1,4 +1,4 @@
-package org.kartikey.tweet_scheduler.twitter;
+package org.kartikey.tweet_scheduler.service;
 
 import com.twitter.clientlib.ApiException;
 import com.twitter.clientlib.TwitterCredentialsOAuth2;
@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import jakarta.annotation.PostConstruct;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URLEncoder;
@@ -37,20 +38,40 @@ public class TwitterService {
     private String refreshToken;
 
     private TwitterApi apiInstance;
-    private AtomicLong tokenExpiryTime = new AtomicLong(System.currentTimeMillis() + (1000L * 60 * 60)); // 1 hour default
+    private AtomicLong tokenExpiryTime = new AtomicLong(System.currentTimeMillis() + (1000L * 60 * 60));
 
-    public TwitterService() {
-//        initApi();
+    @PostConstruct
+    public void init() {
+        log.info("Initializing TwitterService...");
+        if (isConfigured()) {
+            initApi();
+            log.info("Twitter API initialized successfully");
+        } else {
+            log.warn("Twitter credentials not configured. Tweet posting will be disabled.");
+        }
+    }
+
+    private boolean isConfigured() {
+        return clientId != null && !clientId.isEmpty() &&
+                accessToken != null && !accessToken.isEmpty();
     }
 
     private void initApi() {
-        TwitterCredentialsOAuth2 creds = new TwitterCredentialsOAuth2(
-                clientId, clientSecret, accessToken, refreshToken
-        );
-        this.apiInstance = new TwitterApi(creds);
+        try {
+            TwitterCredentialsOAuth2 creds = new TwitterCredentialsOAuth2(
+                    clientId, clientSecret, accessToken, refreshToken
+            );
+            this.apiInstance = new TwitterApi(creds);
+        } catch (Exception e) {
+            log.error("Failed to initialize Twitter API", e);
+        }
     }
 
     public synchronized void ensureTokenValid() throws IOException, InterruptedException {
+        if (!isConfigured()) {
+            throw new IOException("Twitter credentials not configured");
+        }
+
         long now = System.currentTimeMillis();
         if (now >= tokenExpiryTime.get()) {
             refreshAccessToken();
@@ -59,7 +80,6 @@ public class TwitterService {
             initApi();
         }
     }
-
 
     private void refreshAccessToken() throws IOException, InterruptedException {
         log.info("Refreshing Twitter access token...");
@@ -77,9 +97,6 @@ public class TwitterService {
         HttpClient client = HttpClient.newHttpClient();
         HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
 
-        log.info("Token refresh HTTP status: {}", response.statusCode());
-        log.debug("Token refresh raw response: {}", response.body());
-
         if (response.statusCode() == 200) {
             var mapper = new com.fasterxml.jackson.databind.ObjectMapper();
             var json = mapper.readTree(response.body());
@@ -91,10 +108,8 @@ public class TwitterService {
             int expiresIn = json.get("expires_in").asInt();
 
             tokenExpiryTime.set(System.currentTimeMillis() + (expiresIn * 1000L));
-
             log.info("Access token refreshed successfully. Expires in {} seconds", expiresIn);
 
-            // Reinitialize API with new credentials
             initApi();
         } else {
             log.error("Failed to refresh token. Status: {} Response: {}", response.statusCode(), response.body());
@@ -102,21 +117,28 @@ public class TwitterService {
         }
     }
 
-
-    public void postTweet(String text) {
-        try {
-            log.info("Attempting to post tweet: {}", text);
-            ensureTokenValid();
-            TweetCreateRequest req = new TweetCreateRequest();
-            req.setText(text);
-            TweetCreateResponse res = apiInstance.tweets().createTweet(req).execute();
-            log.info("Tweet posted successfully. Response: {}", res);
-        } catch (ApiException e) {
-            log.error("Twitter API error while posting tweet. Status: {}, Body: {}",
-                    e.getCode(), e.getResponseBody(), e);
-        } catch (IOException | InterruptedException e) {
-            log.error("Error posting tweet", e);
+    public String postTweet(String text) throws Exception {
+        if (!isConfigured()) {
+            throw new IllegalStateException("Twitter credentials not configured");
         }
+
+        log.info("Attempting to post tweet: {}", text);
+        ensureTokenValid();
+
+        if (apiInstance == null) {
+            throw new IllegalStateException("Twitter API instance is null");
+        }
+
+        TweetCreateRequest req = new TweetCreateRequest();
+        req.setText(text);
+        TweetCreateResponse res = apiInstance.tweets().createTweet(req).execute();
+
+        String tweetId = res.getData().getId();
+        log.info("Tweet posted successfully. ID: {}", tweetId);
+        return tweetId;
     }
 
+    public boolean isReady() {
+        return isConfigured() && apiInstance != null;
+    }
 }

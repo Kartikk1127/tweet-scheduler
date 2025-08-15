@@ -1,80 +1,58 @@
 package org.kartikey.tweet_scheduler.scheduler;
 
-import jakarta.annotation.PostConstruct;
-import org.kartikey.tweet_scheduler.model.TweetEntry;
-import org.kartikey.tweet_scheduler.twitter.TwitterService;
-import org.kartikey.tweet_scheduler.util.CsvLoader;
+
+import org.kartikey.tweet_scheduler.service.TweetService;
+import org.kartikey.tweet_scheduler.service.TwitterService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
-
-import java.io.BufferedWriter;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.time.*;
-import java.util.*;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 
 @Service
 public class TweetSchedulerService {
 
-    @PostConstruct
-    public void init() {
-        postHourlyTweet();
-    }
-
     private static final Logger log = LoggerFactory.getLogger(TweetSchedulerService.class);
 
-    private final CsvLoader csvLoader;
-    private final TwitterService twitterService;
-    private final Random random = new Random();
-    private final ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
-    private final AtomicInteger tweetIndex = new AtomicInteger(0);
+    @Autowired
+    private TweetService tweetService;
 
-    public TweetSchedulerService(CsvLoader csvLoader, TwitterService twitterService) {
-        this.csvLoader = csvLoader;
-        this.twitterService = twitterService;
-    }
+    @Autowired
+    private TwitterService twitterService;
 
-
+    // Post a tweet every hour at minute 0
     @Scheduled(cron = "0 0 * * * *", zone = "Asia/Kolkata")
     public void postHourlyTweet() {
-        Path path = Paths.get("tweets.csv");
-        try {
-            List<TweetEntry> tweets = csvLoader.loadTweets("tweets.csv");
+        log.info("Starting scheduled tweet posting...");
 
-            if (tweets.isEmpty()) {
-                log.warn("No tweets found in CSV.");
-                return;
-            }
-
-            TweetEntry tweet = tweets.get(0); // first in order
-            twitterService.postTweet(tweet.getText());
-            log.info("Posted tweet #{}: {}", tweet.getId(), tweet.getText());
-
-            // Remove first tweet and rewrite CSV
-            List<TweetEntry> remainingTweets = tweets.subList(1, tweets.size());
-            writeTweetsToCsv(path, remainingTweets);
-
-        } catch (Exception e) {
-            log.error("Error posting tweet: {}", e.getMessage(), e);
+        if (!twitterService.isReady()) {
+            log.warn("Twitter service not ready. Skipping scheduled tweet.");
+            return;
         }
+
+        long unpostedCount = tweetService.getUnpostedTweetCount();
+        log.info("Found {} unposted tweets", unpostedCount);
+
+        if (unpostedCount == 0) {
+            log.warn("No tweets available to post");
+            return;
+        }
+
+        tweetService.postNextTweet().ifPresentOrElse(
+                tweet -> log.info("Successfully posted scheduled tweet ID: {} - '{}'",
+                        tweet.getId(), tweet.getText()),
+                () -> log.error("Failed to post scheduled tweet")
+        );
     }
 
-    private void writeTweetsToCsv(Path path, List<TweetEntry> tweets) throws IOException {
-        try (BufferedWriter writer = Files.newBufferedWriter(path, StandardCharsets.UTF_8)) {
-            for (TweetEntry tweet : tweets) {
-                writer.write(tweet.getId() + "," + tweet.getText());
-                writer.newLine();
-            }
+    // Health check every 30 minutes
+    @Scheduled(fixedRate = 1800000) // 30 minutes
+    public void healthCheck() {
+        long unpostedCount = tweetService.getUnpostedTweetCount();
+        log.info("Health check: {} unposted tweets remaining", unpostedCount);
+
+        if (unpostedCount < 5) {
+            log.warn("WARNING: Only {} tweets remaining. Consider adding more content.", unpostedCount);
         }
     }
-
 }
