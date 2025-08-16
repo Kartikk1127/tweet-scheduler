@@ -148,11 +148,21 @@ public class TwitterService {
 
     public String postTweet(String text) throws Exception {
         ensureTokenValid();
-        TweetCreateRequest req = new TweetCreateRequest();
-        req.setText(text);
-        TweetCreateResponse res = apiInstance.tweets().createTweet(req).execute();
-        return res.getData().getId();
+        try {
+            TweetCreateRequest req = new TweetCreateRequest();
+            req.setText(text);
+            TweetCreateResponse res = apiInstance.tweets().createTweet(req).execute();
+            return res.getData().getId();
+        } catch (ApiException e) {
+            if (e.getCode() == 429) {
+                log.warn("Rate limit hit. Sleeping for 60 seconds before retry...");
+                Thread.sleep(60000); // or use x-rate-limit-reset from headers
+                return postTweet(text); // retry once
+            }
+            throw e;
+        }
     }
+
 
     public boolean isReady() {
         return isConfigured() && apiInstance != null;
